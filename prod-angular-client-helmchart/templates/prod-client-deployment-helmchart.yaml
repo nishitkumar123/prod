@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.prodclientdeployment.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    prod-ang-client: prod-ang-client-app
+spec:
+  replicas: {{ .Values.prodclientdeployment.replicas }}
+  revisionHistoryLimit: {{ .Values.prodclientdeployment.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      prod-ang-client: prod-ang-client-app
+  template:
+    metadata:
+      labels:
+        prod-ang-client: prod-ang-client-app
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: {{ .Values.prodclientdeployment.affinity.nodeAffinity.key }}
+                operator: In
+                values:
+                - {{ .Values.prodclientdeployment.affinity.nodeAffinity.value }}
+      containers:
+      - name: {{ .Values.prodclientdeployment.container.name }}
+        image: "{{ .Values.prodclientdeployment.image.repository }}:{{ .Values.prodclientdeployment.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.prodclientdeployment.container.port }}
+          protocol: {{ .Values.prodclientdeployment.container.protocol }}
+        resources:
+          limits:
+            cpu: {{ .Values.prodclientdeployment.resources.limits.cpu }}
+            memory: {{ .Values.prodclientdeployment.resources.limits.memory }}
+          requests:
+            cpu: {{ .Values.prodclientdeployment.resources.requests.cpu }}
+            memory: {{ .Values.prodclientdeployment.resources.requests.memory }}

@@ -1,0 +1,55 @@
+namespace: prod-angular
+
+# Deployment configuration
+prodclientdeployment:
+  name: prod-angular-client-deployment
+  replicas: 1
+  revisionHistoryLimit: 3
+  labels:
+    prod-ang-client: prod-ang-client-app
+  image:
+    repository: gcr.io/la-prod/prod-angular-client-app
+    tag: 061
+  container:
+    name: prod-ang-client-app
+    port: 443
+    protocol: TCP
+  resources:
+    requests:
+      cpu: 120m
+      memory: 120Mi
+    limits:
+      cpu: 180m
+      memory: 200Mi 
+  affinity:
+    nodeAffinity:
+      key: prod-ang-client
+      value: prod-ang-client-app
+      
+# Horizontal Pod Autoscaler configuration
+prodclienthpa:
+  name: prod-angular-client-hpa
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    cpu:
+      target:
+        averageUtilization: 50
+    memory:
+      target:
+        averageValue: 250Mi
+
+# Service for helm
+prodclientservice:
+  name: prod-angular-client-service
+  namespace: prod-angular
+  annotations:
+    appProtocols: '{"prod-ang-client-https-port":"HTTPS"}'
+    neg: '{"exposed_ports": {"443":{"name": "angular-client-prod-new"}}}'
+  portName: prod-ang-client-https-port
+  port: 443
+  targetPort: 443
+  selector:
+    key: prod-ang-client
+    value: prod-ang-client-app
+  type: NodePort
